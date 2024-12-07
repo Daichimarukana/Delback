@@ -1,0 +1,255 @@
+@import url('https://fonts.googleapis.com/css2?family=BIZ+UDGothic&family=BIZ+UDPGothic&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans+JP:wght@100..900&display=swap');
+body{
+    margin: 0px;
+    width: 100%;
+    height: fit-content;
+    background-color: #F7F7F7;
+}
+header{
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    position: fixed;
+    height: fit-content;
+    padding: 0px 8px;
+
+    border-bottom: solid 1px #CCCCCC;
+
+    background: linear-gradient(45deg, #EEE 25%, transparent 25%, transparent 75%, #EEE 75%), linear-gradient(45deg, #EEE 25%, transparent 25%, transparent 75%, #EEE 75%);
+    background-color: #FFF;
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+}
+header h1{
+    font-family: "Inter", serif;
+    font-size: 32px;
+    margin: 8px;
+    color: #0a0a0a;
+}
+footer{
+    width: calc(100% - 32px);
+    margin: 16px 16px;
+}
+footer a{
+    font-family: "Inter", "Noto Sans JP", sans-serif;
+    font-size: 14px;
+    margin: 0px;
+    text-decoration: none;
+    color: #0a0a0a;
+}
+footer a span{
+    color: #F51F75;
+}
+main{
+    width: 1080px;
+    margin: 128px auto;
+}
+main .Image_zone{
+    margin: auto;
+    width: fit-content;
+    height: fit-content;
+}
+main .Image_zone img{
+    background: linear-gradient(45deg, #EEE 25%, transparent 25%, transparent 75%, #EEE 75%), linear-gradient(45deg, #EEE 25%, transparent 25%, transparent 75%, #EEE 75%);
+    background-color: #FFF;
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+
+    width: fit-content;
+    min-width: 340px;
+    max-width: 960px;
+    height: fit-content;
+    max-height: 640px;
+    border-radius: 15px;
+}
+main .Upload_zone{
+    width: fit-content;
+    height: fit-content;
+    margin: auto;
+}
+
+main .Upload_zone label>input {
+    display:none;
+}
+
+main h1{
+    margin: 4px 0px;
+    font-size: 48px;
+    color: #0a0a0a;
+    font-family: "Inter", "Noto Sans JP", sans-serif;
+}
+main h2{
+    margin: 4px 0px;
+    font-size: 32px;
+    color: #0a0a0a;
+    font-family: "Inter", "Noto Sans JP", sans-serif;
+}
+main p{
+    margin: 4px 0px;
+    font-size: 16px;
+    color: #0a0a0a;
+    font-family: "Inter", "Noto Sans JP", sans-serif;
+}
+.imgbtn{
+    cursor: pointer;
+    border: solid 1px transparent;
+    display: block;
+    width: fit-content;
+    padding: 4px 16px;
+    margin: 16px auto;
+    border-radius: 50px;
+    background-color: #0a0a0a;
+    color: #FFF;
+    font-size: 16px;
+    font-family: "Inter", "Noto Sans JP", sans-serif;
+    font-weight: normal;
+    text-decoration:none;
+    text-align: center;
+    transition: all 250ms ease-out;
+}
+.imgbtn:hover{
+    border: solid 1px #CCCCCC;
+    background-color: #FFF;
+    color: #0a0a0a;
+}
+.imgbtn:active{
+    background-color: #0a0a0a;
+    color: #FFF;
+}
+.imgbtn:disabled{
+    cursor: not-allowed;
+    border: solid 1px #CCCCCC;
+    background-color: #FFF;
+    color: #CCCCCC;
+}
+
+main .Send_zone{
+    width: fit-content;
+    height: fit-content;
+    margin: auto;
+    text-align: center;
+}
+main .loading{
+    display: none;
+    width: fit-content;
+    height: fit-content;
+    margin: 32px auto;
+}
+main .loading h1{
+    margin: 0px;
+    animation: fuwafuwa 1.8s ease-in-out infinite alternate-reverse;
+    font-size: 32px;
+    font-family: "Inter", "Noto Sans JP", sans-serif;
+}
+main .loading p{
+    margin: 4px auto;
+    font-size: 14px;
+    color: #0a0a0a;
+    font-family: "Inter", "Noto Sans JP", sans-serif;
+}
+@keyframes fuwafuwa {
+    0% {
+        transform: translate(-10%, -10%) rotate(90deg);
+    }
+    33% {
+        transform: translate(10%, -10%) rotate(90deg);
+    }
+    66% {
+        transform: translate(-10%, 10%) rotate(135deg);
+    }
+    100% {
+        transform: translate(10%, -10%) rotate(-45deg);
+    }
+}
+main .Download_zone{
+    margin: auto;
+    width: fit-content;
+    display: none;
+    text-align: center;
+    color: #0a0a0a;
+    font-family: "Inter", "Noto Sans JP", sans-serif;
+}
+
+.error{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(5px);
+    z-index: 2147483647;
+    transition: all 250ms ease-out;
+}
+.error .errormodal {
+    position: relative;
+    background-color: #fff0f5;
+    padding:32px;
+    border-radius: 16px;
+    width: 30%;
+    height: fit-content;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0px 48px 0 rgba(0, 0, 0, .15);
+    overflow: hidden;
+    animation: Up_to_down_slideY 0.5s cubic-bezier(0.25, 1, 0.5, 1) 1 forwards;
+}
+.error .errormodal h1{
+    margin: 0px;
+    line-height: 36px;
+    font-size: 32px;
+    font-family: "Inter", "Noto Sans JP", sans-serif;
+    color:#ff80ab;
+    text-align: left;
+}
+.error .errormodal p{
+    margin: 16px 0px 48px 0px;
+    line-height: 20px;
+    font-size: 16px;
+    font-family: "Inter", "BIZ UDPGothic", sans-serif;
+    color:#361420;
+    text-align: left;
+}
+.error .errormodal button{
+    position: absolute;
+    width: 64px;
+    height: 32px;
+    line-height: 32px;
+    right: 32px;
+    bottom: 32px;
+    outline: none;
+    border: none;
+    background-color: #ff80ab;
+    color:#fff0f5;
+    border-radius: 8px;
+    font-family: "Inter", "BIZ UDPGothic", sans-serif;
+    font-size: 16px;
+    text-align: center;
+    cursor: pointer;
+}
+
+hr{
+    height: 0;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    padding: 0;
+    border: 0;
+    border-top: 1px solid #0a0a0a;
+}
+
+@media screen and (max-width: 1080px) {
+    main{
+        width: calc(100% - 32px);
+    }
+
+    main .Image_zone img{
+        width: fit-content;
+        min-width: 50%;
+        max-width: 100%;
+        height: fit-content;
+        max-height: 640px;
+        border-radius: 15px;
+    }
+}
