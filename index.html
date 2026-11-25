@@ -34,7 +34,7 @@
             <p>選択もしくはドラッグ&ドロップもしくはペースト</p>
         </div>
         <div class="Send_zone">
-            <div class="cf-turnstile" data-sitekey="0x4AAAAAAA1rGIuf2Q3VOPFw" data-callback="checkCLTurnstile"></div>
+            <div class="cf-turnstile" data-sitekey="0x4AAAAAAA1rGIuf2Q3VOPFw" data-callback="checkCLTurnstile" data-expired-callback="resetCLTurnstile"></div>
             <button id="send" class="imgbtn" disabled>送信</button>
         </div>
         <div class="loading">
@@ -43,7 +43,7 @@
         </div>
         <div class="Download_zone">
             <p>切り抜き終わりました！✌️<br>ダウンロードが可能です！</p>
-            <a id="download" href="#" class="imgbtn" download>ダウンロード</a>
+            <a id="download" href="#" class="imgbtn" download="delback_result.png">ダウンロード</a>
             <hr>
             <a onclick="window.location.reload(true);" class="imgbtn">はじめから</a>
         </div>
@@ -56,130 +56,134 @@
 </body>
 </html>
 <script>
-    var imagedata;
+    var imagedata = null;
     var loading = false;
     var cloudflare_turnstile = false;
+    var currentObjectUrl = null;
+
     function chgImage(file) {
-        var file_reader = new FileReader();
-        file_reader.addEventListener('load', function() {
-            $('#previewImage').attr('src', file_reader.result);
-        });
-        file_reader.readAsDataURL(file);
+        if (currentObjectUrl) {
+            URL.revokeObjectURL(currentObjectUrl);
+        }
+        currentObjectUrl = URL.createObjectURL(file);
+        $('#previewImage').attr('src', currentObjectUrl);
     }
 
-    function downloadImage(result){
-        $("#download").attr("href", result);
+    function downloadImage(blobUrl, originalName) {
+        var baseName = originalName ? originalName.replace(/\.[^/.]+$/, "") : "delback_result";
+        $("#download").attr("href", blobUrl);
+        $("#download").attr("download", baseName + "_cutout.png");
     }
 
-    function checkCLTurnstile(){
+    function checkCLTurnstile() {
         cloudflare_turnstile = true;
         inputCheck();
     }
 
-    function inputCheck(){
+    function resetCLTurnstile() {
+        cloudflare_turnstile = false;
+        $("#send").attr('disabled', true);
+    }
+
+    function inputCheck() {
         var chk1 = $("#fileImage")[0];
-        var chk2 = cloudflare_turnstile;
-        if (chk1.files.length > 0) {
-            if(chk2 === true){
-                $("#send").attr('disabled', false);
-            }
+        if (chk1.files.length > 0 && cloudflare_turnstile === true) {
+            $("#send").attr('disabled', false);
         }
     }
 
     function sendImage(file) {
-        if(loading == false){
-            var cf_response = $('.cf-turnstile input[name="cf-turnstile-response"]').val();
-            var file_reader = new FileReader();
+        if (loading || !file) return;
 
-            file_reader.addEventListener('load', function() {
-                var base64Image = file_reader.result;
+        var cf_response = $('.cf-turnstile input[name="cf-turnstile-response"]').val();
+        var formData = new FormData();
+        formData.append("image", file);
+        formData.append("captcha", cf_response);
 
-                // サーバーへ送信するJSONデータ
-                var requestData = {
-                    image: base64Image,
-                    captcha: cf_response
-                };
+        loading = true;
+        $(".loading").show();
+        $(".Upload_zone").hide();
+        $(".Send_zone").hide();
 
-                // AJAXでサーバーにPOSTリクエストを送信
-                loading = true;
-                $(".loading").show();
-                $(".Upload_zone").hide();
-                $(".Send_zone").hide();
-                $.ajax({
-                    url: 'https://delback-server.emptybox.win/', // 送信先URLに置き換えてください
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(requestData),
-                    success: function(response) {
-                        $('#previewImage').attr('src', response["result"]);
-                        loading = false;
-                        $(".loading").hide();
-                        $(".Download_zone").show();
-                        downloadImage(response["result"]);
-                    },
-                    error: function(xhr, status, error) {
-                        loading = false;
-                        $(".loading").hide();
-                        view_error(error);
-                    }
-                });
-            });
-            file_reader.readAsDataURL(file);
-        }
+        fetch('http://delback-server.emptybox.win/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(async function(response) {
+            if (!response.ok) {
+                let errorText = "エラーが発生しました (" + response.status + ")";
+                try {
+                    const errJson = await response.json();
+                    if (errJson.error) errorText = errJson.error;
+                } catch (e) {}
+                throw new Error(errorText);
+            }
+            return response.blob();
+        })
+        .then(function(blob) {
+            if (currentObjectUrl) {
+                URL.revokeObjectURL(currentObjectUrl);
+            }
+            currentObjectUrl = URL.createObjectURL(blob);
+            $('#previewImage').attr('src', currentObjectUrl);
+            loading = false;
+            $(".loading").hide();
+            $(".Download_zone").show();
+            downloadImage(currentObjectUrl, file.name);
+        })
+        .catch(function(error) {
+            loading = false;
+            $(".loading").hide();
+            if (typeof turnstile !== "undefined") {
+                turnstile.reset();
+            }
+            resetCLTurnstile();
+            view_error(error.message || "通信エラーが発生しました");
+        });
     }
 
-    function view_error(errormsg){
-		$("#error_message").html(errormsg.replace(/\n/g, '<br>'));
-		$("#error").show();
-		console.error(errormsg);
-	}
+    function view_error(errormsg) {
+        $("#error_message").html(String(errormsg).replace(/\n/g, '<br>'));
+        $("#error").show();
+        console.error(errormsg);
+    }
 
     $(document).ready(function() {
         var $fileArea = $('body');
         var $fileInput = $('#fileImage');
 
-        // ドラッグオーバー時の処理
         $fileArea.on('dragover', function(evt) {
             evt.preventDefault();
             $fileArea.addClass('dragover');
         });
 
-        // ドラッグアウト時の処理
         $fileArea.on('dragleave', function(evt) {
             evt.preventDefault();
             $fileArea.removeClass('dragover');
         });
 
-        // ドロップ時の処理
         $fileArea.on('drop', function(evt) {
             evt.preventDefault();
             $fileArea.removeClass('dragover');
 
             var files = evt.originalEvent.dataTransfer.files;
-            console.log("DRAG & DROP");
-            console.table(files);
-
             if (files.length > 0) {
-                // ファイルをinput要素にセット
                 $fileInput.prop('files', files);
-
-                // プレビュー更新
-                chgImage(files[0]); // 最初のファイルをプレビュー
+                chgImage(files[0]);
                 imagedata = files[0];
                 inputCheck();
             }
         });
 
-        // ファイル選択時の処理
         $fileInput.on('change', function(e) {
             if (e.target.files.length > 0) {
-                chgImage(e.target.files[0]); // 最初のファイルをプレビュー
+                chgImage(e.target.files[0]);
                 imagedata = e.target.files[0];
                 inputCheck();
             }
         });
 
-        $("#send").on("click", function(){
+        $("#send").on("click", function() {
             sendImage(imagedata);
         });
 
@@ -198,11 +202,9 @@
                 dataTransfer.items.add(file);
                 $fileInput[0].files = dataTransfer.files;
 
-                chgImage(dataTransfer.files[0]); // 最初のファイルをプレビュー
-                imagedata = dataTransfer.files[0]; // プレビュー用の画像データ
+                chgImage(file);
+                imagedata = file;
                 inputCheck();
-            } else {
-                console.log("画像がペーストされていません");
             }
         });
 
